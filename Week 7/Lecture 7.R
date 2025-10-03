@@ -21,7 +21,7 @@ main_table_clean = main_table_df %>%
 
 yahoo_data = main_table_clean 
 
-# Plotly
+# Plotly ---
 
 yahoo_graph = plot_ly(
   data = yahoo_data,
