@@ -1,4 +1,4 @@
-library(RSelenium); library(rvest)
+library(RSelenium); library(rvest); library(tidyverse)
 
 
 # Load Driver -------------------------------------------------------------
@@ -72,12 +72,12 @@ auto_search = function(string) {
   search_button = remDr$findElement(using="css selector", value="#nav-search-submit-button")
   search_button$clickElement()
   
-  Sys.sleep(3)
+  Sys.sleep(1)
   
   sort_dropdown = remDr$findElement(using="css selector", value="#a-autoid-0-announce")
   sort_dropdown$clickElement()
   
-  Sys.sleep(3)
+  Sys.sleep(1)
   
   sort_by_reviews = remDr$findElement(using="css selector", value="#s-result-sort-select_3")
   sort_by_reviews$clickElement()
@@ -92,9 +92,48 @@ auto_search = function(string) {
   discounts_only = remDr$findElement(using="css selector", value="#filter-p_n_deal_type > span:nth-child(1)")
   discounts_only$clickElement()
   
+  Sys.sleep(3)
 }
 
-auto_search("Ball Gag")
+auto_search("Rubber Ducky")
+
+
+# Now we have a nice search feature, we want to organise and scrape -------
+
+#product
+
+product_one = remDr$findElement(using="css selector", value=".widgetId\\=search-results_1 > span:nth-child(1)")
+name = product_one$findChildElement(using="css selector", value="h2 span")$getElementText()[[1]]
+
+#overall rating
+# Click to open popover
+rating_trigger = product_one$findChildElement(using="css selector", value="span.a-declarative[data-action='a-popover'] a")
+rating_trigger$clickElement()
+Sys.sleep(2)  # Wait for popover to load
+
+# Now search from remDr (the whole page), NOT from product_one
+overall_rating = remDr$findElement(using="css selector", value="#acr-popover-title")$getElementText()[[1]]
+
+#review count
+total_reviews = product_one$findChildElement(using="css selector", value=".a-size-base")$getElementText()[[1]]
+
+#price
+price_whole = product_one$findChildElement(using="css selector", value=".a-price-whole")$getElementText()[[1]]
+price_fraction = product_one$findChildElement(using="css selector", value=".a-price-fraction")$getElementText()[[1]]
+price = paste0(price_whole, ".", price_fraction)
+price = as.numeric(price)
+
+#delivery date
+delivery = product_one$findChildElement(using="css selector", value=".a-text-bold")$getElementText()[[1]]
+
+
+# Output 
+cat("Name:", name, "\n")
+cat("price (£):", price, "\n")
+cat("Overall rating:", overall_rating, "\n")
+cat("total_reviews:", total_reviews, "\n")
+cat("delivery by:", delivery, "\n")
+
 
 # STOPPPPP ----------------------------------------------------------------
 driver[["server"]]$stop()
