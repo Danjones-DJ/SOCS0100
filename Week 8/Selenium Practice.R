@@ -24,7 +24,7 @@ remDr$navigate("https://amazon.co.uk") # Open Amazon on my firefox
 
 
 # Find pop-up -------------------------------------------------------------
-Sys.sleep(1)
+Sys.sleep(2)
 tryCatch({
   # Try to find the popover
   popover = remDr$findElement(using = "css selector", value = ".a-popover-wrapper")
@@ -40,7 +40,7 @@ tryCatch({
 })
 
 # Next wait for cookies to bake
-Sys.sleep(1)
+Sys.sleep(3)
 
 # Aha!
 detect_cookie = function(driver) {
@@ -72,35 +72,47 @@ auto_search = function(string) {
   search_button = remDr$findElement(using="css selector", value="#nav-search-submit-button")
   search_button$clickElement()
   
-  Sys.sleep(1)
+  Sys.sleep(5)  # Wait longer for results page to fully load
   
-  sort_dropdown = remDr$findElement(using="css selector", value="#a-autoid-0-announce")
-  sort_dropdown$clickElement()
+  # Try sorting - skip if it fails
+  tryCatch({
+    sort_dropdown = remDr$findElement(using="css selector", value="#a-autoid-0-announce")
+    sort_dropdown$clickElement()
+    Sys.sleep(2)
+    
+    sort_by_reviews = remDr$findElement(using="css selector", value="#s-result-sort-select_3")
+    sort_by_reviews$clickElement()
+    Sys.sleep(3)
+  }, error = function(e) {
+    cat("Sorting skipped\n")
+  })
   
-  Sys.sleep(1)
+  # Try filters - skip if they fail
+  tryCatch({
+    best_reviews_only = remDr$findElement(using="css selector", value="#filter-p_72 > span:nth-child(1)")
+    best_reviews_only$clickElement()
+    Sys.sleep(3)
+  }, error = function(e) {
+    cat("Review filter skipped\n")
+  })
   
-  sort_by_reviews = remDr$findElement(using="css selector", value="#s-result-sort-select_3")
-  sort_by_reviews$clickElement()
-  
-  Sys.sleep(3)
-  
-  best_reviews_only = remDr$findElement(using="css selector", value="#filter-p_72 > span:nth-child(1)")
-  best_reviews_only$clickElement()
-  
-  Sys.sleep(3)
-  
-  discounts_only = remDr$findElement(using="css selector", value="#filter-p_n_deal_type > span:nth-child(1)")
-  discounts_only$clickElement()
-  
-  Sys.sleep(3)
+  tryCatch({
+    discounts_only = remDr$findElement(using="css selector", value="#filter-p_n_deal_type > span:nth-child(1)")
+    discounts_only$clickElement()
+    Sys.sleep(3)
+  }, error = function(e) {
+    cat("Discount filter skipped\n")
+  })
 }
 
-auto_search("Rubber Ducky")
+auto_search("rubber ducky")
 
 
 # Now we have a nice search feature, we want to organise and scrape -------
 
-#product
+
+
+
 
 product_one = remDr$findElement(using="css selector", value=".widgetId\\=search-results_1 > span:nth-child(1)")
 name = product_one$findChildElement(using="css selector", value="h2 span")$getElementText()[[1]]
